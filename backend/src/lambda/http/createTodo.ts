@@ -1,24 +1,29 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import 'source-map-support/register'
+import * as middy from 'middy'
+import { cors } from 'middy/middlewares'
+import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
+import { getUserId } from '../utils';
+import { createTodo } from '../../businessLogic/todos';
 
-import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
-import { CreateTodoRequest } from '../../requests/createTodoRequest'
-import { getUserId} from '../../helpers/authHelper'
-import { TodosAccess } from '../../dataLayer/todosAccess'
-import { ApiResponseHelper } from '../../helpers/apiResponseHelper'
-import { createLogger } from '../../utils/logger'
-
-const logger = createLogger('todos')
-
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  
+export const handler = middy(
+  async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const newTodo: CreateTodoRequest = JSON.parse(event.body)
-
     
-    const authHeader = event.headers['Authorization']
-    const userId = getUserId(authHeader)
-    logger.info(`create group for user ${userId} with data ${newTodo}`)
-    const item = await new TodosAccess().createTodo(newTodo,userId)
-    
-    return new ApiResponseHelper().generateDataSuccessResponse(201,'item',item)
+    const userId = getUserId(event);
+    const todo = createTodo(userId, newTodo)
 
-}
+    return {
+      statusCode: 201,
+      body: JSON.stringify({
+        item: todo
+      })
+    }
+  }
+)
+
+handler.use(
+  cors({
+    credentials: true
+  })
+)

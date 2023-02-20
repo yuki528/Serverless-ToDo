@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "lib": ["es2017"],
-    "removeComments": true,
+    "lib": [
+      "es2017"
+    ],
     "moduleResolution": "node",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -9,12 +10,7 @@
     "target": "es2017",
     "outDir": "lib"
   },
-  "include": ["./**/*.ts"],
   "exclude": [
-    "node_modules/**/*",
-    ".serverless/**/*",
-    ".webpack/**/*",
-    "_warmup/**/*",
-    ".vscode/**/*"
+    "node_modules"
   ]
 }
