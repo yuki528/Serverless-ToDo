@@ -22,7 +22,7 @@ export const handler = middy(
       body: JSON.stringify({
         item: updatedTodoItem
       })
-    }
+    };
   }
 )
 

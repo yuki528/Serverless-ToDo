@@ -17,6 +17,9 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
 
+  apiGateway:
+    minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
+    
   tracing:
     lambda: true
     apiGateway: true
@@ -31,7 +34,14 @@ provider:
   logs:
     restApi: true
 
-
+  # iam:
+  #   role:
+  #     statements:
+  #       - Effect: Allow
+  #         Action:
+  #           - xray:PutTelemetryRecords
+  #           - xray:PutTraceSegments
+  #         Resource: "*"
 
 custom:
   documentation:
@@ -92,11 +102,19 @@ functions:
           cors: true
           authorizer: Auth
           reqValidatorName: RequestBodyValidator
+          request:
+            schemas:
+              'application/json': ${file(models/create-todo-request.json)
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
         Resource: !GetAtt TodosTable.Arn
+      - Effect: Allow
+        Action:
+        - s3:PutObject
+        - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
 
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
